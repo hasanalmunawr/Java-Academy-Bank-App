@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/bankapp  # Replace with your database name
+    username: root  # Replace with your MySQL username
+    password: B@d1r0@12 # Replace with your MySQL password
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL driver class name
+
+  jpa:
+    hibernate:
+      ddl-auto: create  # Adjust as needed (update, create, create-drop, etc.)
+      show-sql: true  # Set to false in production for performance reasons
+    properties:
+      hibernate:
+        format_sql: true  # Enables formatted SQL output in logs
+    database: mysql  # Set the database type
+    database-platform: org.hibernate.dialect.MySQLDialect  # Set the appropriate dialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hasanalmunawar01@gmail.com
+    password: vhpmeizmdpvpiclz
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000 # a day
+      refresh-token:
+        expiration: 604800000 # 7 days
+
+
