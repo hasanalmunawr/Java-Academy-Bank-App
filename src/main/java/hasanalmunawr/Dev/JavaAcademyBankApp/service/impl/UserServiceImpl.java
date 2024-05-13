@@ -94,7 +94,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthReponse login(LoginRequest request) {
+        try {
+            var userEntity = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow();
+            if (passwordEncoder.matches(userEntity.getPassword(), request.getPassword())) {
 
+            }
+        }
     }
 
 
