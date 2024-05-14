@@ -95,11 +95,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthReponse login(LoginRequest request) {
         try {
-            var userEntity = userRepository.findByEmail(request.getEmail())
+            var userLogin = userRepository.findByEmail(request.getEmail())
                     .orElseThrow();
-            if (passwordEncoder.matches(userEntity.getPassword(), request.getPassword())) {
-
+            if (!passwordEncoder.matches(userLogin.getPassword(), request.getPassword())) {
+                throw new IllegalAccessException();
             }
+
+            String refreshToken = jwtService.generateRefreshToken(userLogin);
+            long accessExpiration = jwtService.getJwtExpiration();
+
+
+            return AuthReponse.builder()
+                    .tokenType(userLogin.getTokens().get(0).getTokenType())
+                    .accessTokenExpiry((int) accessExpiration)
+                    .accessToken(refreshToken)
+                    .build();
+        } catch (Exception e) {
+            log.error("[UserServiceImpl:login] Email Or Password Are Not Matcher, {}", e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
