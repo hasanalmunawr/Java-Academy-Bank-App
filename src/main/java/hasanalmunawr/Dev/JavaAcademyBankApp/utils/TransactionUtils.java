@@ -9,16 +9,16 @@ public class TransactionUtils {
 
     public static final String SUCCES_DEPOSIT = "Succes Deposit Account";
 
-    public static String depositTransaction(DepositRequest depositRequest, String name) {
+    public static String depositTransaction(DepositRequest depositRequest, String name, String idTransaction) {
         return """
-                No Transaction : 
+                No Transaction : %s
                 Transaction Date: %s
                 Transaction Time : %s
                 Recipient Name : %s
                 Recipient Number : %s
                 Nominal :  %s
              
-                """.formatted(LocalDate.now(), LocalTime.now(),name, depositRequest.getRecipientNumber(),
+                """.formatted(idTransaction, LocalDate.now(), LocalTime.now(),name, depositRequest.getRecipientNumber(),
                 depositRequest.getNominal());
     }
 }

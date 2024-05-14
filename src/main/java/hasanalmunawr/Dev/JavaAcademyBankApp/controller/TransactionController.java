@@ -1,6 +1,7 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,16 @@ public class TransactionController {
             @AuthenticationPrincipal UserDetails userDetails
             ) {
         accountService.deposit(request, userDetails);
-        return ResponseEntity.ok("This is a deposit");
+        return ResponseEntity.ok("This is a deposit for " + userDetails.getUsername());
 //        return ResponseEntity.ok(transactionService.depositFunds(request));
+    }
+
+
+    @PostMapping(path = "/deposit")
+    public ResponseEntity<?> withdraw(
+            @RequestBody WithdrawRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+            ) {
+        return ResponseEntity.ok(accountService.withdraw(request, userDetails);)
     }
 }

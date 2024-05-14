@@ -130,7 +130,7 @@ public class UserServiceImpl implements UserService {
 
 
             return AuthReponse.builder()
-                    .username(userLogin.getUsername())
+                    .username(userLogin.getEmail())
                     .tokenType(userLogin.getTokens().get(0).getTokenType())
                     .accessTokenExpiry((int) accessExpiration)
                     .accessToken(refreshToken)

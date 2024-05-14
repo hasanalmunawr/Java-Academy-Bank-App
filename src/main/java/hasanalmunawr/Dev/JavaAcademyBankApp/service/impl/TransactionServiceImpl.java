@@ -53,12 +53,12 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("[TransactionServiceImpl:depositAccount] Successful account deposit process for  :{}",
                 userEntity.getUsername());
 
-        EmailDetails emailDetails = EmailDetails.builder()
-                .recipient(userEntity.getEmail())
-                .subject("Transaction Jurney")
-                .messageBody(TransactionUtils.depositTransaction(request, userEntity.getUsername()))
-                .build();
-        emailService.sendEmailAlert(emailDetails);
+//        EmailDetails emailDetails = EmailDetails.builder()
+//                .recipient(userEntity.getEmail())
+//                .subject("Transaction Jurney")
+//                .messageBody(TransactionUtils.depositTransaction(request, userEntity.getUsername()))
+//                .build();
+//        emailService.sendEmailAlert(emailDetails);
 
        return DepositResponse.builder()
                 .recipientNumber(String.valueOf(userEntity.getPrimaryAccount().getAccountNumber()))

@@ -61,6 +61,10 @@ public class UserEntity extends Auditable implements UserDetails {
 
     @Override
     public String getUsername() {
+        return email;
+    }
+
+    public String getFullName() {
         return firstName + " " + lastName;
     }
 
