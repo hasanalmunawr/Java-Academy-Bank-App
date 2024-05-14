@@ -80,25 +80,29 @@ public class AccountServiceImpl implements AccountService {
                 .messageBody(TransactionUtils
                         .depositTransaction(request, user.getFullName(), savingTransaction.getId()))
                 .build();
-        emailService.sendEmailAlert(emailDetails);
+//        emailService.sendEmailAlert(emailDetails);
         log.info("[AccountServiceImpl:deposit]  Deposit Succeed for Account : {}", userDetails.getUsername());
 
 //        }
     }
 
     @Override
-    public void withdraw(WithdrawRequest request, UserDetails userDetails) {
+    public void withdraw(WithdrawRequest request, UserEntity currentUser) {
         try {
-            UserEntity user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-
-            PrimaryAccount primaryAccount = user.getPrimaryAccount();
+            log.info("[AccountServiceImpl:withdraw] Withdrawing Account : {}", currentUser.getEmail());
+            PrimaryAccount primaryAccount = currentUser.getPrimaryAccount();
             double availableBalance = primaryAccount.getAccountBalance();
             if (availableBalance < request.getAmount()) {
+                log.error("[AccountServiceImpl");
                 throw new Exception("Balance Is Not Enough");
             }
+
+            log.info("[AccountServiceImpl:withdraw] Request Account : {}", request);
+//            THE BALANCE IS NOT REDUCING !!!!!!!!!!!!
             primaryAccount.setAccountBalance(availableBalance - request.getAmount());
             accountRepository.save(primaryAccount);
-
+            userRepository.save(currentUser);
+            log.info("[AccountServiceImpl:withdraw] Account Successfully Withdrawn : {}", currentUser.getEmail());
         } catch (Exception e) {
             log.error(e.getMessage());
         }

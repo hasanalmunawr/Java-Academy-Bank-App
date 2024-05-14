@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
                     .subject("ACCOUNT CREATION")
                     .messageBody(MESSAGEBODY(savedUser))
                     .build();
-            emailService.sendEmailAlert(emailDetails);
+//            emailService.sendEmailAlert(emailDetails);
             log.info("[UserServiceImpl:createUser] Created User {}", request.getEmail());
 
 
