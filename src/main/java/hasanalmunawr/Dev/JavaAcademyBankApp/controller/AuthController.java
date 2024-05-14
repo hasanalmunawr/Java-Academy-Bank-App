@@ -22,7 +22,7 @@ public class AuthController {
         return ResponseEntity.ok(userService.createUser(request));
     }
 
-    @PostMapping(path = "/login")
+    @PostMapping(path = "/sign-in")
     public ResponseEntity<?> signIn(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
     }

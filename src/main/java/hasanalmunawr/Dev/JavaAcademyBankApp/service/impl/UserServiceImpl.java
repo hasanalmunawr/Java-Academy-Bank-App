@@ -8,6 +8,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.BankResponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.Token;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.TokenType;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
+import hasanalmunawr.Dev.JavaAcademyBankApp.exception.AccountNotFoundException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.UserAlreadyExistException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
@@ -19,10 +20,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.naming.AuthenticationException;
 import java.util.Optional;
 
 import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.UserUtils.ACCOUNT_CREATED;
@@ -44,6 +48,8 @@ public class UserServiceImpl implements UserService {
 
     private final TokenRepository tokenRepository;
 
+    private final AuthenticationManager authenticationManager;
+
     @Autowired
     private  EmailService emailService;
     @Override
@@ -63,6 +69,10 @@ public class UserServiceImpl implements UserService {
                     .password(passwordEncoder.encode(request.getPassword()))
                     .primaryAccount(accountService.createPrimaryAccount())
                     .phone(request.getPhone())
+                    .enabled(true)
+                    .accountNonExpired(true)
+                    .accountNonLocked(true)
+                    .credentialsNonExpired(true)
                     .build();
 
             UserEntity savedUser = userRepository.save(user);
@@ -94,18 +104,33 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthReponse login(LoginRequest request) {
+        log.info("[UserServiceImpl:login] Try to Macthing Ther user {}", request.getEmail());
         try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                        )
+                );
             var userLogin = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow();
-            if (!passwordEncoder.matches(userLogin.getPassword(), request.getPassword())) {
-                throw new IllegalAccessException();
-            }
+                    .orElseThrow(AccountNotFoundException::new);
+
+//            log.info("The password real :{}", request.getPassword());
+//            String hashedLoginPassword = passwordEncoder.encode(request.getPassword());
+//            log.info("The password request : {}", hashedLoginPassword);
+//            log.info("The password userENti : {}", userLogin.getPassword());
+
+//            if (!passwordEncoder.matches(userLogin.getPassword(), request.getPassword())) {
+//                log.error("[UserServiceImpl:login] Password Does Not Match");
+//                throw new AuthenticationException("Invalid credentials");  // More specific exception
+//            }
 
             String refreshToken = jwtService.generateRefreshToken(userLogin);
             long accessExpiration = jwtService.getJwtExpiration();
 
 
             return AuthReponse.builder()
+                    .username(userLogin.getUsername())
                     .tokenType(userLogin.getTokens().get(0).getTokenType())
                     .accessTokenExpiry((int) accessExpiration)
                     .accessToken(refreshToken)
