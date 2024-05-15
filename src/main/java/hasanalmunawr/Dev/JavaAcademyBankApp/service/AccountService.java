@@ -12,8 +12,4 @@ public interface AccountService {
 
     PrimaryAccount createPrimaryAccount();
 
-    void deposit2(String accountType, double amount, Principal principal);
-    void deposit(DepositRequest request, UserDetails userDetails);
-
-    void withdraw(WithdrawRequest request, UserEntity userEntity);
 }

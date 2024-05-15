@@ -1,6 +1,7 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RecipientRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
@@ -27,9 +28,8 @@ public class TransactionController {
     @PostMapping(path = "/deposit")
     public ResponseEntity<?> deposit(
             @RequestBody DepositRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        accountService.deposit(request, userDetails);
+            @AuthenticationPrincipal UserDetails userDetails) {
+        transactionService.deposit(request, userDetails);
         return ResponseEntity.ok("This is a deposit for " + userDetails.getUsername());
 //        return ResponseEntity.ok(transactionService.depositFunds(request));
     }
@@ -38,20 +38,22 @@ public class TransactionController {
     @GetMapping(path = "/withdraw")
     public ResponseEntity<?> withdraw(
             @RequestBody WithdrawRequest request,
-            @AuthenticationPrincipal UserEntity user
-    ) {
+            @AuthenticationPrincipal UserEntity user) {
 //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 //        Object details = auth.getDetails();
 //        Principal principal = (Principal) auth.getPrincipal();
 //        String password = (String) auth.getCredentials();
 //        principal.
-        accountService.withdraw(request, user);
+        transactionService.withdraw(request, user);
         return ResponseEntity.ok("This is a withdraw from : " + user.getFullName());
     }
 
 
-    @GetMapping(path = "/current")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserEntity user) {
+    @PostMapping(path = "/transfer")
+    public ResponseEntity<?> tranfers(
+            @RequestBody RecipientRequest request,
+            @AuthenticationPrincipal UserEntity user) {
+        transactionService.transfer(request, user);
         return ResponseEntity.ok(user);
     }
 }
