@@ -47,9 +47,9 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public void deposit(DepositRequest request, UserDetails userDetails) {
-        log.info("[TransactionServiceImpl:deposit] Processing Deposit for Account : {}", userDetails.getUsername());
-        UserEntity user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+    public void deposit(DepositRequest request, UserEntity currentUser) {
+        log.info("[TransactionServiceImpl:deposit] Processing Deposit for Account : {}", currentUser.getFullName());
+        UserEntity user = userRepository.findByEmail(currentUser.getUsername()).orElseThrow();
 //        if (accountType.equalsIgnoreCase("Primary")) {
         PrimaryAccount primaryAccount = user.getPrimaryAccount();
         primaryAccount.setAccountBalance(primaryAccount.getAccountBalance() + request.getNominal());
@@ -72,8 +72,8 @@ public class TransactionServiceImpl implements TransactionService {
                 .messageBody(TransactionUtils
                         .depositTransaction(request, user.getFullName(), savingTransaction.getId()))
                 .build();
-//        emailService.sendEmailAlert(emailDetails);
-        log.info("[TransactionServiceImpl:deposit]  Deposit Succeed for Account : {}", userDetails.getUsername());
+        emailService.sendEmailAlert(emailDetails);
+        log.info("[TransactionServiceImpl:deposit]  Deposit Succeed for Account : {}", currentUser.getFullName());
 
     }
 
@@ -90,9 +90,30 @@ public class TransactionServiceImpl implements TransactionService {
 
             log.info("[AccountServiceImpl:withdraw] Request Account : {}", request);
             primaryAccount.setAccountBalance(availableBalance - request.getAmount());
-            accountRepository.save(primaryAccount);
+            PrimaryAccount saveAccount = accountRepository.save(primaryAccount);
             userRepository.save(currentUser);
             log.info("[AccountServiceImpl:withdraw] Account Successfully Withdrawn : {}", currentUser.getEmail());
+
+
+            PrimaryTransaction primaryTransaction = PrimaryTransaction.builder()
+                    .dateTime(LocalDateTime.now())
+                    .description("Deposit To Primary Account")
+                    .type("DEPOSIT")
+                    .status("Succeed")
+                    .amount(String.valueOf(request.getAmount()))
+                    .availableBalance(saveAccount.getAccountBalance())
+                    .build();
+
+            PrimaryTransaction savingTransaction = transactionService.savingTransaction(primaryTransaction);
+
+
+            EmailDetails emailDetails = EmailDetails.builder()
+                    .recipient(currentUser.getEmail())
+                    .subject("Transaction Jurney")
+                    .messageBody(TransactionUtils
+                            .withdrawTransaction(currentUser, savingTransaction))
+                    .build();
+            emailService.sendEmailAlert(emailDetails);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

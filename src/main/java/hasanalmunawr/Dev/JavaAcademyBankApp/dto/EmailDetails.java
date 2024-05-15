@@ -1,5 +1,6 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.dto;
 
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,10 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EmailDetails {
+public class EmailDetails <T>{
 
     private String recipient;
-    private String messageBody;
+    private T messageBody;
     private String subject;
     private String attachment;
 }

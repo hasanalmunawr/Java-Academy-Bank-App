@@ -28,10 +28,9 @@ public class TransactionController {
     @PostMapping(path = "/deposit")
     public ResponseEntity<?> deposit(
             @RequestBody DepositRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        transactionService.deposit(request, userDetails);
-        return ResponseEntity.ok("This is a deposit for " + userDetails.getUsername());
-//        return ResponseEntity.ok(transactionService.depositFunds(request));
+            @AuthenticationPrincipal UserEntity user) {
+        transactionService.deposit(request, user);
+        return ResponseEntity.ok("This is a deposit for " + user.getFullName());
     }
 
 

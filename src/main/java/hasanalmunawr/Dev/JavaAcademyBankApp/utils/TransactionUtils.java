@@ -1,6 +1,8 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.utils;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryTransaction;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -21,4 +23,18 @@ public class TransactionUtils {
                 """.formatted(idTransaction, LocalDate.now(), LocalTime.now(),name, depositRequest.getRecipientNumber(),
                 depositRequest.getNominal());
     }
+
+    public static String withdrawTransaction(UserEntity user, PrimaryTransaction transaction) {
+        return """
+                No Transaction : %s
+                Transaction Date: %s
+                Transaction Time : %s
+                Withdraw Nominal :  %s
+             
+                """.formatted(transaction.getId(), LocalDate.now(), LocalTime.now(),
+                transaction.getAmount());
+    }
+
+
+
 }
