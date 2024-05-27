@@ -5,6 +5,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.UserRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.AuthReponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.BankResponse;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.EmailTemplateName;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.Token;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.TokenType;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.naming.AuthenticationException;
+import java.security.SecureRandom;
 import java.util.Optional;
 
 import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.UserUtils.ACCOUNT_CREATED;
@@ -69,7 +71,7 @@ public class UserServiceImpl implements UserService {
                     .password(passwordEncoder.encode(request.getPassword()))
                     .primaryAccount(accountService.createPrimaryAccount())
                     .phone(request.getPhone())
-                    .enabled(true)
+                    .enabled(false)
                     .accountNonExpired(true)
                     .accountNonLocked(true)
                     .credentialsNonExpired(true)
@@ -88,6 +90,7 @@ public class UserServiceImpl implements UserService {
                     .messageBody(MESSAGEBODY(savedUser))
                     .build();
 //            emailService.sendEmailAlert(emailDetails);
+            emailService.sendEmail(savedUser.getEmail(), savedUser.getFullName(), EmailTemplateName.ACTIVATE_ACCOUNT,generateActivationCode(6) , "ACCOUNT CREATION");
             log.info("[UserServiceImpl:createUser] Created User {}", request.getEmail());
 
 
@@ -115,16 +118,6 @@ public class UserServiceImpl implements UserService {
             var userLogin = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(AccountNotFoundException::new);
 
-//            log.info("The password real :{}", request.getPassword());
-//            String hashedLoginPassword = passwordEncoder.encode(request.getPassword());
-//            log.info("The password request : {}", hashedLoginPassword);
-//            log.info("The password userENti : {}", userLogin.getPassword());
-
-//            if (!passwordEncoder.matches(userLogin.getPassword(), request.getPassword())) {
-//                log.error("[UserServiceImpl:login] Password Does Not Match");
-//                throw new AuthenticationException("Invalid credentials");  // More specific exception
-//            }
-
             String refreshToken = jwtService.generateRefreshToken(userLogin);
             long accessExpiration = jwtService.getJwtExpiration();
 
@@ -139,6 +132,11 @@ public class UserServiceImpl implements UserService {
             log.error("[UserServiceImpl:login] Email Or Password Are Not Matcher, {}", e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void activateAccount(String tokenCode) {
+
     }
 
 
@@ -164,6 +162,22 @@ public class UserServiceImpl implements UserService {
                 .isRevoked(false)
                 .build();
         tokenRepository.save(token);
+    }
+
+
+
+    private String generateActivationCode(int lengthCode) {
+        String characters = "0123456789";
+        StringBuilder codeBuilder = new StringBuilder();
+
+        SecureRandom secureRandom = new SecureRandom();
+
+        for (int i = 0; i < lengthCode; i++) {
+            int randomIndex = secureRandom.nextInt(characters.length());
+            codeBuilder.append(characters.charAt(randomIndex));
+        }
+
+        return codeBuilder.toString();
     }
     private String MESSAGEBODY(UserEntity user) {
         return """

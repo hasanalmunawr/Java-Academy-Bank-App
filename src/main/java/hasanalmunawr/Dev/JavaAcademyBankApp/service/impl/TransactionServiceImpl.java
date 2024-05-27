@@ -5,6 +5,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RecipientRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.DepositResponse;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.EmailTemplateName;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryAccount;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryTransaction;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
@@ -15,6 +16,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.service.EmailService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.PrimaryTransactionService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.TransactionService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.utils.TransactionUtils;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
@@ -47,7 +49,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public void deposit(DepositRequest request, UserEntity currentUser) {
+    public void deposit(DepositRequest request, UserEntity currentUser) throws MessagingException {
         log.info("[TransactionServiceImpl:deposit] Processing Deposit for Account : {}", currentUser.getFullName());
         UserEntity user = userRepository.findByEmail(currentUser.getUsername()).orElseThrow();
 //        if (accountType.equalsIgnoreCase("Primary")) {
@@ -72,7 +74,8 @@ public class TransactionServiceImpl implements TransactionService {
                 .messageBody(TransactionUtils
                         .depositTransaction(request, user.getFullName(), savingTransaction.getId()))
                 .build();
-        emailService.sendEmailAlert(emailDetails);
+//        emailService.sendEmailAlert(emailDetails);
+        emailService.sendEmail(user.getEmail(), user.getFullName(), EmailTemplateName.ACTIVATE_ACCOUNT,"", "" );
         log.info("[TransactionServiceImpl:deposit]  Deposit Succeed for Account : {}", currentUser.getFullName());
 
     }
@@ -113,7 +116,8 @@ public class TransactionServiceImpl implements TransactionService {
                     .messageBody(TransactionUtils
                             .withdrawTransaction(currentUser, savingTransaction))
                     .build();
-            emailService.sendEmailAlert(emailDetails);
+//            emailService.sendEmail(request.getEmail(), user.getFullName(), EmailTemplateName.ACTIVATE_ACCOUNT,"", "" );
+
         } catch (Exception e) {
             log.error(e.getMessage());
         }

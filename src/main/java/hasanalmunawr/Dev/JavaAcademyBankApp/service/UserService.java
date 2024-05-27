@@ -11,4 +11,6 @@ public interface UserService {
     BankResponse createUser(UserRequest request);
 
     AuthReponse login(LoginRequest request);
+
+    void activateAccount(String tokenCode);
 }

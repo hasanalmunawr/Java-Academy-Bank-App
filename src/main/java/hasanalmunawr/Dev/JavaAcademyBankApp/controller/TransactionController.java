@@ -8,6 +8,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.PrimaryTransactionService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.TransactionService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,7 +33,7 @@ public class TransactionController {
     @PostMapping(path = "/deposit")
     public ResponseEntity<?> deposit(
             @RequestBody DepositRequest request,
-            @AuthenticationPrincipal UserEntity user) {
+            @AuthenticationPrincipal UserEntity user) throws MessagingException {
         transactionService.deposit(request, user);
         return ResponseEntity.ok("This is a deposit for " + user.getFullName());
     }
