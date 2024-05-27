@@ -3,8 +3,10 @@ package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RecipientRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryTransaction;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
+import hasanalmunawr.Dev.JavaAcademyBankApp.service.PrimaryTransactionService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/v1/transactions")
@@ -24,6 +27,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     private final AccountService accountService;
+    private final PrimaryTransactionService primaryTransactionService;
 
     @PostMapping(path = "/deposit")
     public ResponseEntity<?> deposit(
@@ -48,11 +52,17 @@ public class TransactionController {
     }
 
 
-    @PostMapping(path = "/transfer")
+    @PostMapping(path = "/transfers")
     public ResponseEntity<?> tranfers(
             @RequestBody RecipientRequest request,
             @AuthenticationPrincipal UserEntity user) {
         transactionService.transfer(request, user);
         return ResponseEntity.ok(user);
+    }
+
+    public ResponseEntity<List<PrimaryTransaction>> getHistoryTransaction(
+            Authentication currentUser
+    ) {
+        return ResponseEntity.ok(primaryTransactionService.getHistoryTransactions(currentUser));
     }
 }
