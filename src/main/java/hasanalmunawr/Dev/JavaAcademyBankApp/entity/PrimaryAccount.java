@@ -23,8 +23,7 @@ public class PrimaryAccount {
     private Integer accountNumber;
     private double accountBalance;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @OneToOne(mappedBy = "primaryAccount") // Owning side is PrimaryAccount
     private UserEntity user;
 
     @OneToMany(mappedBy = "primaryAccount", cascade =  CascadeType.ALL, fetch = FetchType.LAZY)

@@ -23,8 +23,8 @@ import java.util.Set;
 @ToString
 public class UserEntity extends Auditable implements UserDetails {
 
-    @Column(unique = true, updatable = false, nullable = true)
-    private String userId;
+//    @Column(unique = true, updatable = false, nullable = true)
+//    private String userId;
     private String firstName;
     private String lastName;
 
@@ -42,7 +42,8 @@ public class UserEntity extends Auditable implements UserDetails {
 
 
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL) // Cascade persist to UserEntity
+    @JoinColumn(name = "user_id", referencedColumnName = "id") // Foreign key details
     private PrimaryAccount primaryAccount;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

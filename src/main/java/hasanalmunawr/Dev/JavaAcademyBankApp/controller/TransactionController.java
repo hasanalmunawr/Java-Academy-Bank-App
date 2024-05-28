@@ -3,6 +3,7 @@ package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.TransferRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.WithdrawResponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryTransaction;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
@@ -10,6 +11,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.service.PrimaryTransactionService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.TransactionService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,24 +41,22 @@ public class TransactionController {
 
 
     @GetMapping(path = "/withdraw")
-    public ResponseEntity<?> withdraw(
+    public ResponseEntity<WithdrawResponse> withdraw(
             @RequestBody WithdrawRequest request,
-            Authentication currentUser) {
-        UserEntity user = (UserEntity) currentUser.getPrincipal();
+            @AuthenticationPrincipal UserEntity currentUser) {
+//        UserEntity user = (UserEntity) currentUser.getPrincipal();
 
-        transactionService.withdraw(request, user);
-        return ResponseEntity.ok("Successfully withdrawn " + request.getAmount());
+        return ResponseEntity.ok(transactionService.withdraw(request, currentUser));
     }
 
 
     @PostMapping(path = "/transfers")
     public ResponseEntity<?> tranfers(
             @RequestBody TransferRequest request,
-            Authentication currentUser) {
-        UserEntity user = (UserEntity) currentUser.getPrincipal();
+            @AuthenticationPrincipal UserEntity currentUser) throws BadRequestException {
+//        UserEntity user = (UserEntity) currentUser.getPrincipal();
 
-        transactionService.transfer(request, user);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(transactionService.transfer(request, currentUser));
     }
 
     public ResponseEntity<List<PrimaryTransaction>> getHistoryTransaction(

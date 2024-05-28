@@ -148,6 +148,8 @@ public class TransactionServiceImpl implements TransactionService {
                     .recipientNumber(String.valueOf(recipientAccount.getAccountNumber()))
                     .amount(request.getAmount())
                     .build();
+        } else {
+            throw new BadRequestException("Invalid Password");
         }
 
     }
