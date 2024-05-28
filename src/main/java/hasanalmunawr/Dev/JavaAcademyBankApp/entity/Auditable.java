@@ -25,10 +25,8 @@ import static java.time.LocalDateTime.now;
 public abstract class Auditable {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     private String id = new AlternativeJdkIdGenerator().generateId().toString();
-//    private String refrenceId = new AlternativeJdkIdGenerator().generateId().toString();
 
     @CreationTimestamp
     @NotNull

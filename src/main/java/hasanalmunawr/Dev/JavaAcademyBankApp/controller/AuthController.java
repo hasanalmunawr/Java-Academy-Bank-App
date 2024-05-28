@@ -1,7 +1,7 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.UserRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RegisterRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -18,13 +18,13 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping(path = "/register")
-    public ResponseEntity<?> signUp(@RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.createUser(request));
+    public ResponseEntity<?> signUp(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(userService.register(request));
     }
 
     @PostMapping(path = "/login")
     public ResponseEntity<?> signIn(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(userService.login(request));
+        return ResponseEntity.ok(userService.authentication(request));
     }
 
 

@@ -7,16 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @Data
-@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-public class BankResponse {
+@Builder
+public class RegisterResponse {
 
-    private String message;
+    @JsonProperty("account_info")
     private AccountInfo accountInfo;
-    private DepositResponse response;
-
-    @JsonProperty("access_token")
-    private String accessToken;
 }

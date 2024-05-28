@@ -13,15 +13,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Entity
-public class TokenCodeEntity {
+public class TokenCodeEntity extends Auditable{
 
-    @Id
-    @GeneratedValue
-    private Integer id;
 
     @Column(unique = true)
     private String token;
-    private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
     private LocalDateTime validatedAt;
 

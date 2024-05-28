@@ -1,37 +1,37 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.service.impl;
 
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.*;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.UserRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RegisterRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.AuthReponse;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.BankResponse;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.EmailTemplateName;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.Token;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.TokenType;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.RegisterResponse;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.*;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.AccountNotFoundException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.UserAlreadyExistException;
+import hasanalmunawr.Dev.JavaAcademyBankApp.mapper.UserMapper;
+import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenCodeRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.EmailService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.UserService;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.naming.AuthenticationException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.UserUtils.ACCOUNT_CREATED;
+import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.EmailUtils.ACTIVATION_ACCOUNT;
 import static java.time.LocalDate.now;
 
 @Service
@@ -41,24 +41,19 @@ import static java.time.LocalDate.now;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
     private final AccountService accountService;
-
     private final PasswordEncoder passwordEncoder;
-
     private final JwtService jwtService;
-
     private final TokenRepository tokenRepository;
-
     private final AuthenticationManager authenticationManager;
+    private final TokenCodeRepository codeRepository;
+    private final EmailService emailService;
 
-    @Autowired
-    private  EmailService emailService;
+    private UserMapper userMapper;
+
     @Override
-    public BankResponse createUser(UserRequest request) {
-        log.info("[UserServiceImpl:createUser] Creating User {}", request.getEmail());
+    public RegisterResponse register(RegisterRequest request) {
         try {
-
             Optional<UserEntity> byEmail = userRepository.findByEmail(request.getEmail());
             if (byEmail.isPresent()) {
                 throw new UserAlreadyExistException("User With "+request.getEmail()+" Already Exist");
@@ -78,36 +73,20 @@ public class UserServiceImpl implements UserService {
                     .build();
 
             UserEntity savedUser = userRepository.save(user);
-            String jwtToken = jwtService.generateToken(savedUser);
-            String refreshToken = jwtService.generateRefreshToken(user);
-            saveUserToken(savedUser, jwtToken);
-            log.info("[UserServiceImpl:createUser] Succes Generated Token User ");
+            sendValidationEmail(savedUser);
 
-
-            EmailDetails emailDetails = EmailDetails.builder()
-                    .recipient(savedUser.getEmail())
-                    .subject("ACCOUNT CREATION")
-                    .messageBody(MESSAGEBODY(savedUser))
+            return RegisterResponse.builder()
+                    .accountInfo(userMapper.convertUserToACI(user))
                     .build();
-//            emailService.sendEmailAlert(emailDetails);
-            emailService.sendEmail(savedUser.getEmail(), savedUser.getFullName(), EmailTemplateName.ACTIVATE_ACCOUNT,generateActivationCode(6) , "ACCOUNT CREATION");
-            log.info("[UserServiceImpl:createUser] Created User {}", request.getEmail());
 
-
-            return BankResponse.builder()
-                    .message(ACCOUNT_CREATED)
-                    .accountInfo(convertUserToACI(savedUser))
-                    .accessToken(jwtToken)
-                    .build();
         } catch (Exception e) {
-            log.error("[UserServiceImpl:createUser] Get An error {}", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
+
     }
 
     @Override
-    public AuthReponse login(LoginRequest request) {
-        log.info("[UserServiceImpl:login] Try to Macthing Ther user {}", request.getEmail());
+    public AuthReponse authentication(LoginRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -121,7 +100,6 @@ public class UserServiceImpl implements UserService {
             String refreshToken = jwtService.generateRefreshToken(userLogin);
             long accessExpiration = jwtService.getJwtExpiration();
 
-
             return AuthReponse.builder()
                     .username(userLogin.getEmail())
                     .tokenType(userLogin.getTokens().get(0).getTokenType())
@@ -129,68 +107,64 @@ public class UserServiceImpl implements UserService {
                     .accessToken(refreshToken)
                     .build();
         } catch (Exception e) {
-            log.error("[UserServiceImpl:login] Email Or Password Are Not Matcher, {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
     @Override
     public void activateAccount(String tokenCode) {
+        TokenCodeEntity codeEntity = codeRepository.findByToken(tokenCode)
+                .orElseThrow(RuntimeException::new);
 
+        if (LocalDateTime.now().isAfter(codeEntity.getExpiresAt())) {
+            throw new RuntimeException("Activation token has expired. A new token has been send to tha same email " +
+                    "address");
+        }
+
+        UserEntity userEntity = userRepository.findById(codeEntity.getUser().getId())
+                .orElseThrow(() -> new UsernameNotFoundException("User " +
+                        "Not Found"));
+        userEntity.setEnabled(true);
+        userRepository.save(userEntity);
     }
 
+    private void sendValidationEmail(UserEntity user) throws MessagingException {
+        var newToken = generateAndSaveActivationCode(user);
 
-    private AccountInfo convertUserToACI(UserEntity user) {
-        return AccountInfo.builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .accountNumber(String.valueOf(user.getPrimaryAccount().getAccountNumber()))
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .createAt(user.getCreatedAt().toString())
-                .build();
+        emailService.sendEmail(
+                user.getEmail(),
+                user.getFullName(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                newToken,
+                ACTIVATION_ACCOUNT
+        );
     }
 
+    private String generateAndSaveActivationCode(UserEntity user) {
+        String generatedCode = generateActivationCode();
 
-
-    private void saveUserToken(UserEntity user, String jwtToken) {
-        Token token = Token.builder()
+        TokenCodeEntity token = TokenCodeEntity.builder()
+                .token(generatedCode)
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
                 .user(user)
-                .token(jwtToken)
-                .tokenType(TokenType.BEARER)
-                .isExpired(false)
-                .isRevoked(false)
                 .build();
-        tokenRepository.save(token);
+        codeRepository.save(token);
+
+        return generatedCode;
     }
 
-
-
-    private String generateActivationCode(int lengthCode) {
+    private String generateActivationCode() {
         String characters = "0123456789";
         StringBuilder codeBuilder = new StringBuilder();
 
         SecureRandom secureRandom = new SecureRandom();
 
-        for (int i = 0; i < lengthCode; i++) {
+        for (int i = 0; i < 6; i++) {
             int randomIndex = secureRandom.nextInt(characters.length());
             codeBuilder.append(characters.charAt(randomIndex));
         }
 
         return codeBuilder.toString();
-    }
-    private String MESSAGEBODY(UserEntity user) {
-        return """
-          Congratulations! Your Account Has Been Created.
-          Your Account Details:
-          First Name: %s
-          Last Name: %s
-          Account Number: %s
-          Email: %s
-          Phone: %s
-          Created At: %s
-          """.formatted(user.getFirstName(), user.getLastName(), user.getPrimaryAccount().getAccountNumber(),
-                user.getEmail(), user.getPhone(), user.getCreatedAt());
     }
 
 }

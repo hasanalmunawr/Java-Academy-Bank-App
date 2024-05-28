@@ -2,15 +2,15 @@ package hasanalmunawr.Dev.JavaAcademyBankApp.service;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.AuthReponse;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.BankResponse;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.UserRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RegisterRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.RegisterResponse;
 
 public interface UserService {
 
 
-    BankResponse createUser(UserRequest request);
+    RegisterResponse register(RegisterRequest request);
 
-    AuthReponse login(LoginRequest request);
+    AuthReponse authentication(LoginRequest request);
 
     void activateAccount(String tokenCode);
 }
