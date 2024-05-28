@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Notification</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        p {
+            line-height: 1.5;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        li span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="text-align: center;">Deposit Notification</h1>
+    <p>Dear {username},</p>
+    <p>This email confirms a successful deposit to your account.</p>
+    <ul>
+        <li>Username: <span id="username">{username}</span></li>
+        <li>Account Number: <span id="account-number">{account-number}</span></li>
+        <li>Transaction ID: <span id="transaction-id">{transaction-id}</span></li>
+        <li>Nominal: <span id="nominal">{nominal}</span></li>
+        <li>Date: <span id="date">{date}</span></li>
+        <li>Time: <span id="time">{time}</span></li>
+    </ul>
+    <p>If you did not initiate this deposit, please contact us immediately.</p>
+    <p>Thank you for using our services.</p>
+    <p>Sincerely,</p>
+    <p>The Hasan's Company Team</p>
+</div>
+
+</body>
+</html>

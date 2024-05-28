@@ -4,10 +4,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.dto.EmailDetails;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RecipientRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.EmailTemplateName;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryAccount;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryTransaction;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.*;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.AccountNotFoundException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.PrimaryAccountRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
@@ -20,11 +17,15 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static hasanalmunawr.Dev.JavaAcademyBankApp.entity.TransactionType.DEPOSIT;
+import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.TransactionUtils.SUCCEED;
 import static java.time.LocalDate.now;
 
 @Service
@@ -40,10 +41,11 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public void deposit(DepositRequest request, UserEntity currentUser) throws MessagingException {
-        log.info("[TransactionServiceImpl:deposit] Processing Deposit for Account : {}", currentUser.getFullName());
-        UserEntity user = userRepository.findByEmail(currentUser.getUsername()).orElseThrow();
-        PrimaryAccount primaryAccount = user.getPrimaryAccount();
+    public void deposit(DepositRequest request, UserEntity currentUser) throws MessagingException, IOException {
+//        UserEntity user = (UserEntity) currentUser.getAuthorities();
+        log.info("[TransactionServiceImpl:deposit] Processing Deposit for Account : {}", currentUser.getEmail());
+
+        PrimaryAccount primaryAccount = currentUser.getPrimaryAccount();
         primaryAccount.setAccountBalance(primaryAccount.getAccountBalance() + request.getNominal());
         PrimaryAccount saveAccount = accountRepository.save(primaryAccount);
 
@@ -51,21 +53,19 @@ public class TransactionServiceImpl implements TransactionService {
         PrimaryTransaction primaryTransaction = PrimaryTransaction.builder()
                 .dateTime(dateTime)
                 .description("Deposit To Primary Account")
-                .type("DEPOSIT")
-                .status("Succeed")
+                .type(DEPOSIT.getName())
+                .status(SUCCEED)
                 .amount(String.valueOf(request.getNominal()))
                 .availableBalance(saveAccount.getAccountBalance())
                 .build();
         PrimaryTransaction savingTransaction = transactionService.savingTransaction(primaryTransaction);
 
-        EmailDetails emailDetails = EmailDetails.builder()
-                .recipient(user.getEmail())
-                .subject("Transaction Jurney")
-                .messageBody(TransactionUtils
-                        .depositTransaction(request, user.getFullName(), savingTransaction.getId()))
-                .build();
-
-        emailService.sendEmail(user.getEmail(), user.getFullName(), EmailTemplateName.ACTIVATE_ACCOUNT,"", "" );
+        emailService.sendEmailDepositTransaction(
+                currentUser.getFullName(),
+                primaryAccount.getAccountNumber().toString(),
+                savingTransaction.getId(),
+                savingTransaction.getAmount(),
+                currentUser.getEmail());
         log.info("[TransactionServiceImpl:deposit]  Deposit Succeed for Account : {}", currentUser.getFullName());
 
     }
@@ -100,12 +100,12 @@ public class TransactionServiceImpl implements TransactionService {
             PrimaryTransaction savingTransaction = transactionService.savingTransaction(primaryTransaction);
 
 
-            EmailDetails emailDetails = EmailDetails.builder()
-                    .recipient(currentUser.getEmail())
-                    .subject("Transaction Jurney")
-                    .messageBody(TransactionUtils
-                            .withdrawTransaction(currentUser, savingTransaction))
-                    .build();
+//            EmailDetails emailDetails = EmailDetails.builder()
+//                    .recipient(user.getEmail())
+//                    .subject("Transaction Jurney")
+//                    .messageBody(TransactionUtils
+//                            .withdrawTransaction(currentUser, savingTransaction))
+//                    .build();
 
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -115,6 +115,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public void transfer(RecipientRequest request, UserEntity currentUser) {
         try {
+
             PrimaryAccount recipientAccount = accountRepository.findByAccountNumber(request.getAccountNumber())
                     .orElseThrow(AccountNotFoundException::new);
             PrimaryAccount currentAccount = currentUser.getPrimaryAccount();

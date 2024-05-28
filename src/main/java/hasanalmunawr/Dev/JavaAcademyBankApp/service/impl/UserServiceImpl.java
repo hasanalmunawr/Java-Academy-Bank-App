@@ -3,14 +3,13 @@ package hasanalmunawr.Dev.JavaAcademyBankApp.service.impl;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.AccountInfo;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RegisterRequest;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.AuthReponse;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.AuthResponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.RegisterResponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.*;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.AccountNotFoundException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.ActivationTokenException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.EntityNotFound;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.UserAlreadyExistException;
-import hasanalmunawr.Dev.JavaAcademyBankApp.mapper.UserMapper;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenCodeRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
@@ -19,10 +18,8 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.service.EmailService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,7 +30,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.EmailUtils.ACTIVATION_ACCOUNT;
 import static java.time.LocalDate.now;
@@ -58,8 +54,8 @@ public class UserServiceImpl implements UserService {
     public RegisterResponse register(RegisterRequest request) {
         log.info("Register request: {}", request);
         try {
-            Optional<UserEntity> byEmail = userRepository.findByEmail(request.getEmail());
-            if (byEmail.isPresent()) {
+            var userEmail = userRepository.findByEmail(request.getEmail());
+            if (userEmail.isPresent()) {
                 throw new UserAlreadyExistException("User With "+request.getEmail()+" Already Exist");
             }
 
@@ -77,7 +73,6 @@ public class UserServiceImpl implements UserService {
                     .build();
 
             UserEntity savedUser = userRepository.save(user);
-            log.info("Created user: {}", savedUser.getCreatedAt().toString());
             sendValidationEmail(savedUser);
 
             return RegisterResponse.builder()
@@ -91,7 +86,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthReponse authentication(LoginRequest request) {
+    public AuthResponse authentication(LoginRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -105,9 +100,8 @@ public class UserServiceImpl implements UserService {
             String refreshToken = jwtService.generateRefreshToken(userLogin);
             long accessExpiration = jwtService.getJwtExpiration();
 
-            return AuthReponse.builder()
+            return AuthResponse.builder()
                     .username(userLogin.getEmail())
-//                    .tokenType(userLogin.getTokens().get(0).getTokenType())
                     .accessTokenExpiry((int) accessExpiration)
                     .accessToken(refreshToken)
                     .build();
@@ -116,6 +110,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public void activateAccount(String tokenCode) {
         TokenCodeEntity codeEntity = codeRepository.findByToken(tokenCode)
@@ -126,7 +121,7 @@ public class UserServiceImpl implements UserService {
                     "address");
         }
 
-        UserEntity userEntity = userRepository.findById(codeEntity.getUser().getId())
+        var userEntity = userRepository.findById(codeEntity.getUser().getId())
                 .orElseThrow(() -> new UsernameNotFoundException("User " +
                         "Not Found"));
         userEntity.setEnabled(true);
@@ -136,7 +131,7 @@ public class UserServiceImpl implements UserService {
     private void sendValidationEmail(UserEntity user) throws MessagingException {
         var newToken = generateAndSaveActivationCode(user);
 
-        emailService.sendEmail(
+        emailService.sendEmailAcctivateAccount(
                 user.getEmail(),
                 user.getFullName(),
                 EmailTemplateName.ACTIVATE_ACCOUNT,
@@ -180,7 +175,6 @@ public class UserServiceImpl implements UserService {
                 .accountNumber(String.valueOf(user.getPrimaryAccount().getAccountNumber()))
                 .email(user.getEmail())
                 .phone(user.getPhone())
-//                .createAt(user.getCreatedAt())
                 .build();
     }
 

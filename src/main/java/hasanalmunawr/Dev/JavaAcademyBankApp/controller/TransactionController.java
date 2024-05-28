@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -33,30 +34,30 @@ public class TransactionController {
     @PostMapping(path = "/deposit")
     public ResponseEntity<?> deposit(
             @RequestBody DepositRequest request,
-            @AuthenticationPrincipal UserEntity user) throws MessagingException {
-        transactionService.deposit(request, user);
-        return ResponseEntity.ok("This is a deposit for " + user.getFullName());
+            @AuthenticationPrincipal UserEntity currentUser) throws MessagingException, IOException {
+
+        transactionService.deposit(request, currentUser);
+        return ResponseEntity.ok("This is a deposit for " + currentUser.getFullName());
     }
 
 
     @GetMapping(path = "/withdraw")
     public ResponseEntity<?> withdraw(
             @RequestBody WithdrawRequest request,
-            @AuthenticationPrincipal UserEntity user) {
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        Object details = auth.getDetails();
-//        Principal principal = (Principal) auth.getPrincipal();
-//        String password = (String) auth.getCredentials();
-//        principal.
+            Authentication currentUser) {
+        UserEntity user = (UserEntity) currentUser.getPrincipal();
+
         transactionService.withdraw(request, user);
-        return ResponseEntity.ok("This is a withdraw from : " + user.getFullName());
+        return ResponseEntity.ok("Successfully withdrawn " + request.getAmount());
     }
 
 
     @PostMapping(path = "/transfers")
     public ResponseEntity<?> tranfers(
             @RequestBody RecipientRequest request,
-            @AuthenticationPrincipal UserEntity user) {
+            Authentication currentUser) {
+        UserEntity user = (UserEntity) currentUser.getPrincipal();
+
         transactionService.transfer(request, user);
         return ResponseEntity.ok(user);
     }

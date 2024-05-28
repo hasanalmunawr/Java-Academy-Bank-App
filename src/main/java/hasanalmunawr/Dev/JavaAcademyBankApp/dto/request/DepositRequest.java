@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DepositRequest {
 
-    private Integer recipientNumber;
+//    private Integer recipientNumber;
     private double nominal;
     private String description;
 }

@@ -2,7 +2,9 @@ package hasanalmunawr.Dev.JavaAcademyBankApp.service.impl;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.EmailDetails;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.EmailTemplateName;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.TransactionType;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.EmailService;
+import hasanalmunawr.Dev.JavaAcademyBankApp.utils.EmailUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +19,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.EmailUtils.TRANSACTION_JOURNEY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE_MIXED;
 
@@ -34,12 +38,13 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String senderEmail;
 
+    // OPTIONAL FOR MORE FEATURE WITH FRONT END
     private String confirmationUrl;
 
 
 
     @Async
-    public void sendEmail(
+    public void sendEmailAcctivateAccount(
             String to,
             String username,
             EmailTemplateName emailTemplate,
@@ -53,8 +58,6 @@ public class EmailServiceImpl implements EmailService {
             templateName = emailTemplate.getName();
         }
 
-//        log.info("[EmailService:sendEmail] The Template Name is {}", templateName );
-//        log.info("[EmailService:sendEmail] The Template Should be  {}", emailTemplate.getName() );
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
                 mimeMessage,
@@ -77,5 +80,62 @@ public class EmailServiceImpl implements EmailService {
         helper.setText(template, true);
         mailSender.send(mimeMessage);
     }
+
+    @Async
+    public void sendEmailDepositTransaction(
+            String username,
+            String accountNumber,
+            String transactionId,
+            String nominal,
+            String email
+    ) throws IOException, MessagingException {
+        String messageHtml = EmailUtils.emailMessageDeposit(
+                username,
+                accountNumber,
+                transactionId,
+                nominal);
+
+        MimeMessage message = mailSender.createMimeMessage();
+
+        message.setFrom(senderEmail);
+        message.setRecipients(MimeMessage.RecipientType.TO, email);
+        message.setSubject(TRANSACTION_JOURNEY);
+        message.setContent(messageHtml, "text/html; charset=utf-8");
+        mailSender.send(message);
+    }
+
+
+    @Async
+    public void sendEmailTransaction(
+            String email,
+            TransactionType transactionType,
+            String transactionId,
+            String recipientName,
+            String recipientNumber,
+            String nominal
+    ) throws IOException {
+        try {
+            String messageHtml = EmailUtils.emailMessageTransactions(
+                    transactionType.getName(),
+                    transactionId,
+                    recipientName,
+                    recipientNumber,
+                    nominal
+            );
+            MimeMessage message = mailSender.createMimeMessage();
+
+            message.setFrom(senderEmail);
+            message.setRecipients(MimeMessage.RecipientType.TO, email);
+            message.setSubject(TRANSACTION_JOURNEY);
+            message.setContent(messageHtml, "text/html; charset=utf-8");
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
 
 }

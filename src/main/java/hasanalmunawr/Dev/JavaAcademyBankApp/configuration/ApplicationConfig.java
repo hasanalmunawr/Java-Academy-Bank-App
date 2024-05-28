@@ -40,6 +40,11 @@ public class ApplicationConfig {
         return new ApplicationAuditAware();
     }
 
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+//        return new JwtAuthenticationFilter();
+//    }
+
     @Bean
     public LocalValidatorFactoryBean validator() {
         return new LocalValidatorFactoryBean();
