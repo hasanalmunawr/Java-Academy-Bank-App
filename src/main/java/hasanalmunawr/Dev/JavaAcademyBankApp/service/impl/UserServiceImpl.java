@@ -1,11 +1,14 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.service.impl;
 
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.AccountInfo;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RegisterRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.AuthReponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.response.RegisterResponse;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.*;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.AccountNotFoundException;
+import hasanalmunawr.Dev.JavaAcademyBankApp.exception.ActivationTokenException;
+import hasanalmunawr.Dev.JavaAcademyBankApp.exception.EntityNotFound;
 import hasanalmunawr.Dev.JavaAcademyBankApp.exception.UserAlreadyExistException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.mapper.UserMapper;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenCodeRepository;
@@ -19,6 +22,7 @@ import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,10 +53,10 @@ public class UserServiceImpl implements UserService {
     private final TokenCodeRepository codeRepository;
     private final EmailService emailService;
 
-    private UserMapper userMapper;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
+        log.info("Register request: {}", request);
         try {
             Optional<UserEntity> byEmail = userRepository.findByEmail(request.getEmail());
             if (byEmail.isPresent()) {
@@ -73,10 +77,11 @@ public class UserServiceImpl implements UserService {
                     .build();
 
             UserEntity savedUser = userRepository.save(user);
+            log.info("Created user: {}", savedUser.getCreatedAt().toString());
             sendValidationEmail(savedUser);
 
             return RegisterResponse.builder()
-                    .accountInfo(userMapper.convertUserToACI(user))
+                    .accountInfo(convertUserToACI(user))
                     .build();
 
         } catch (Exception e) {
@@ -102,7 +107,7 @@ public class UserServiceImpl implements UserService {
 
             return AuthReponse.builder()
                     .username(userLogin.getEmail())
-                    .tokenType(userLogin.getTokens().get(0).getTokenType())
+//                    .tokenType(userLogin.getTokens().get(0).getTokenType())
                     .accessTokenExpiry((int) accessExpiration)
                     .accessToken(refreshToken)
                     .build();
@@ -114,10 +119,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void activateAccount(String tokenCode) {
         TokenCodeEntity codeEntity = codeRepository.findByToken(tokenCode)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new EntityNotFound("Token Not Found"));
 
         if (LocalDateTime.now().isAfter(codeEntity.getExpiresAt())) {
-            throw new RuntimeException("Activation token has expired. A new token has been send to tha same email " +
+            throw new ActivationTokenException("Activation token has expired. A new token has been send to tha same email " +
                     "address");
         }
 
@@ -165,6 +170,18 @@ public class UserServiceImpl implements UserService {
         }
 
         return codeBuilder.toString();
+    }
+
+
+    public AccountInfo convertUserToACI(UserEntity user) {
+        return AccountInfo.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .accountNumber(String.valueOf(user.getPrimaryAccount().getAccountNumber()))
+                .email(user.getEmail())
+                .phone(user.getPhone())
+//                .createAt(user.getCreatedAt())
+                .build();
     }
 
 }

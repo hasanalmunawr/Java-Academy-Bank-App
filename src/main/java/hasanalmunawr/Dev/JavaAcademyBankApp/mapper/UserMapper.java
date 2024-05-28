@@ -15,7 +15,6 @@ public class UserMapper {
                 .accountNumber(String.valueOf(user.getPrimaryAccount().getAccountNumber()))
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .createAt(user.getCreatedAt().toString())
                 .build();
     }
 }

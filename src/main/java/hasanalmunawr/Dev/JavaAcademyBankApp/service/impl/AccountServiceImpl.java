@@ -31,21 +31,12 @@ public class AccountServiceImpl implements AccountService {
 
     private final PrimaryAccountRepository accountRepository;
 
-    private final UserRepository userRepository;
-
-    private final EmailService emailService;
-
-//    private final TransactionService transactionService11;
-
-    private final PrimaryTransactionService transactionService;
-
     @Override
     public PrimaryAccount createPrimaryAccount() {
         PrimaryAccount account = PrimaryAccount.builder()
                 .accountNumber(UserUtils.generateAccountNumber())
                 .accountBalance(0L)
                 .build();
-        log.info("[AccountServiceImpl:createPrimaryAccount] Primary Account Has Created");
         return accountRepository.save(account);
     }
 

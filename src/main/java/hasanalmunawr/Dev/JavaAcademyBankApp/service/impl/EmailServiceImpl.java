@@ -53,8 +53,8 @@ public class EmailServiceImpl implements EmailService {
             templateName = emailTemplate.getName();
         }
 
-        log.info("[EmailService:sendEmail] The Template Name is {}", templateName );
-        log.info("[EmailService:sendEmail] The Template Should be  {}", emailTemplate.getName() );
+//        log.info("[EmailService:sendEmail] The Template Name is {}", templateName );
+//        log.info("[EmailService:sendEmail] The Template Should be  {}", emailTemplate.getName() );
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(
                 mimeMessage,
@@ -74,9 +74,7 @@ public class EmailServiceImpl implements EmailService {
         helper.setSubject(subject);
 
         String template = templateEngine.process(templateName, context);
-
         helper.setText(template, true);
-
         mailSender.send(mimeMessage);
     }
 
