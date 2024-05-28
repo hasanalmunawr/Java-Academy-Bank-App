@@ -6,8 +6,11 @@ import lombok.Getter;
 public enum TransactionType {
 
     DEPOSIT("Deposit"),
+    DEPOSIT_DESCRIPTION("Deposit To Primary Account"),
     WITHDRAWAL("WithDrawal"),
-    TRANSFER("Transfer");
+    WITHDRAWAL_DESCRIPTION("Withdrawal From Primary Account"),
+    TRANSFER("Transfer"),
+    TRANSFER_DESCRIPTION("Transfer To Another Primary Account"),;
 
     private final String name;
 

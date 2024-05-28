@@ -42,7 +42,7 @@ public class UserEntity extends Auditable implements UserDetails {
 
 
 
-    @OneToOne
+    @OneToOne(mappedBy = "user")
     private PrimaryAccount primaryAccount;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

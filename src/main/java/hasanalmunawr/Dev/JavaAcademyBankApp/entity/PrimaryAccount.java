@@ -23,6 +23,10 @@ public class PrimaryAccount {
     private Integer accountNumber;
     private double accountBalance;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private UserEntity user;
+
     @OneToMany(mappedBy = "primaryAccount", cascade =  CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PrimaryTransaction> primaryTransactions;
 }

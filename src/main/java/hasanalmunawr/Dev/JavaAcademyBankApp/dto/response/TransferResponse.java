@@ -1,26 +1,29 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-public class DepositResponse {
+public class TransferResponse {
 
+    @JsonProperty("transfer_id")
+    private String transferId;
+    @JsonProperty("transfer_time")
+    private String transferTime;
+    @JsonProperty("transfer_date")
+    private String transferDate;
+    @JsonProperty("is_succeed")
+    private boolean isSuccess;
     @JsonProperty("recipient_number")
     private String recipientNumber;
     @JsonProperty("recipient_name")
     private String recipientName;
-    private double nominal;
-    private LocalDate date;
-    private LocalTime time;
+    private Double amount;
+    private String currency;
 }

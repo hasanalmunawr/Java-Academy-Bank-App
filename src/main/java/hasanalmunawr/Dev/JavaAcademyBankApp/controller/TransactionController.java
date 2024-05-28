@@ -1,7 +1,7 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.DepositRequest;
-import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RecipientRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.TransferRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.WithdrawRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.PrimaryTransaction;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
@@ -13,12 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -54,7 +51,7 @@ public class TransactionController {
 
     @PostMapping(path = "/transfers")
     public ResponseEntity<?> tranfers(
-            @RequestBody RecipientRequest request,
+            @RequestBody TransferRequest request,
             Authentication currentUser) {
         UserEntity user = (UserEntity) currentUser.getPrincipal();
 
