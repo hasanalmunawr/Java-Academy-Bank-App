@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/v1/transactions")
+@RequestMapping(path = "/api/v1/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
 

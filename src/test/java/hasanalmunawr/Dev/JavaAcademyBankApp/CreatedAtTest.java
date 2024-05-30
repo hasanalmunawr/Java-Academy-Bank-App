@@ -1,5 +1,6 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp;
 
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.Auditable;
 import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
 import lombok.val;
@@ -26,6 +27,6 @@ public class CreatedAtTest {
         Assertions.assertNotNull(save.getCreatedAt());
         System.out.printf(save.getCreatedAt().toString());
 
-
     }
+
 }

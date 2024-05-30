@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>hasanalmunawr.Dev</groupId>
-	<artifactId>Java-Academy-Bank-App</artifactId>
+	<artifactId>Online-wallet</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Java-Academy-Bank-App</name>
+	<name>Online-wallet</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>17</java.version>

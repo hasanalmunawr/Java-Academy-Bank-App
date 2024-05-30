@@ -1,8 +1,7 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp.configuration;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenRepository;
-import hasanalmunawr.Dev.JavaAcademyBankApp.service.impl.JwtService;
-import jakarta.persistence.Column;
+import hasanalmunawr.Dev.JavaAcademyBankApp.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(
@@ -50,7 +50,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         userEmail = jwtService.extractUsername(jwt);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+
+            var isTokenValid2 = tokenRepository.findByToken(jwt)
+                    .map(token -> !token.isExpired() && !token.isRevoked)
+                    .orElse(false);
+            if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid2) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

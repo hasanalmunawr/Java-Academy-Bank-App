@@ -13,6 +13,7 @@ import hasanalmunawr.Dev.JavaAcademyBankApp.exception.UserAlreadyExistException;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenCodeRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.TokenRepository;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
+import hasanalmunawr.Dev.JavaAcademyBankApp.security.JwtService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.AccountService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.EmailService;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.UserService;
@@ -30,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static hasanalmunawr.Dev.JavaAcademyBankApp.utils.EmailUtils.ACTIVATION_ACCOUNT;
 import static java.time.LocalDate.now;
@@ -97,16 +99,17 @@ public class UserServiceImpl implements UserService {
             var userLogin = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(AccountNotFoundException::new);
 
-            String refreshToken = jwtService.generateRefreshToken(userLogin);
+            String generatedToken = jwtService.generateToken(userLogin);
             long accessExpiration = jwtService.getJwtExpiration();
 
+            savedUserToken(generatedToken, userLogin);
             return AuthResponse.builder()
                     .username(userLogin.getEmail())
                     .accessTokenExpiry((int) accessExpiration)
-                    .accessToken(refreshToken)
+                    .accessToken(generatedToken)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new UsernameNotFoundException("Email Not Found");
         }
     }
 
@@ -126,6 +129,39 @@ public class UserServiceImpl implements UserService {
                         "Not Found"));
         userEntity.setEnabled(true);
         userRepository.save(userEntity);
+    }
+
+    @Transactional
+    @Override
+    public void logout(UserEntity currentUser) {
+        revokeAllUserTokens(currentUser);
+    }
+
+
+    private void savedUserToken(String jwtToken, UserEntity user) {
+        Token token = Token.builder()
+                .token(jwtToken)
+                .user(user)
+                .tokenType(TokenType.BEARER)
+                .isRevoked(false)
+                .isExpired(false)
+                .build();
+
+        tokenRepository.save(token);
+    }
+
+
+    private void revokeAllUserTokens(UserEntity user) {
+        var validTokensByUser = tokenRepository.findAllValidTokensByUser(user.getId());
+
+        if (validTokensByUser.isEmpty()) {
+            return;
+        }
+        validTokensByUser.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        tokenRepository.saveAll(validTokensByUser);
     }
 
     private void sendValidationEmail(UserEntity user) throws MessagingException {

@@ -2,6 +2,7 @@ package hasanalmunawr.Dev.JavaAcademyBankApp.controller;
 
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.LoginRequest;
 import hasanalmunawr.Dev.JavaAcademyBankApp.dto.request.RegisterRequest;
+import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -10,11 +11,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = "/v1/auth")
+@RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication")
 @Slf4j
@@ -45,5 +47,22 @@ public class AuthController {
     ) throws MessagingException {
         userService.activateAccount(tokenCode);
     }
+
+
+    @GetMapping(path = "/test")
+    public String hello(
+            @RequestParam String tokenCode
+    ) throws MessagingException {
+        return "Hello from auth controller";
+    }
+
+
+
+//    @DeleteMapping(path = "/logout")
+//    public void logout(
+//            @AuthenticationPrincipal UserEntity currentUser
+//    ) {
+//        userService.logout(currentUser);
+//    }
 }
 

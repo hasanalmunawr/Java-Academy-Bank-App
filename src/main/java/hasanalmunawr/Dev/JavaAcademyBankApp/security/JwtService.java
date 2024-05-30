@@ -1,4 +1,4 @@
-package hasanalmunawr.Dev.JavaAcademyBankApp.service.impl;
+package hasanalmunawr.Dev.JavaAcademyBankApp.security;
 
 
 import io.jsonwebtoken.Claims;

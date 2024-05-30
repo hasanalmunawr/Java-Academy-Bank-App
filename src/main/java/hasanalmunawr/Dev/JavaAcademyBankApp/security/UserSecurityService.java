@@ -1,6 +1,5 @@
-package hasanalmunawr.Dev.JavaAcademyBankApp.service.impl;
+package hasanalmunawr.Dev.JavaAcademyBankApp.security;
 
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
 import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +18,8 @@ public class UserSecurityService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var userEmail = userRepository.findByEmail(username).orElseThrow();
 
-        if (userEmail == null) {
-            log.warn("Username {} Not Found", username);
-            throw new UsernameNotFoundException("Username "+ username + " Not Found");
-        }
-        return userEmail;
+        return userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
     }
 }

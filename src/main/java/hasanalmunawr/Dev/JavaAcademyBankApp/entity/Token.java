@@ -9,12 +9,12 @@ import lombok.*;
 @Entity
 @Builder
 @Table(name = "tokens")
-public class Token {
+public class Token extends Auditable{
 
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer id;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    public Integer id;
 
     @Column(unique = true)
     public String token;

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PrimaryAccountRepository extends CrudRepository<PrimaryAccount, Long> {
+public interface PrimaryAccountRepository extends CrudRepository<PrimaryAccount, String> {
 
     Optional<PrimaryAccount> findByAccountNumber(Integer accountNumber);
 

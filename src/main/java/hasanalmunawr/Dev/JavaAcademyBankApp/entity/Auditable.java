@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.util.AlternativeJdkIdGenerator;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static java.time.LocalDateTime.now;
 
@@ -24,9 +25,13 @@ import static java.time.LocalDateTime.now;
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
 public abstract class Auditable {
 
+//    @Id
+//    @Column(updatable = false)
+//    private String id = new AlternativeJdkIdGenerator().generateId().toString();
+
     @Id
-    @Column(updatable = false)
-    private String id = new AlternativeJdkIdGenerator().generateId().toString();
+    @GeneratedValue
+    private Integer id;
 
     @CreationTimestamp
     @NotNull

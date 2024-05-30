@@ -20,7 +20,6 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "users")
-@ToString
 public class UserEntity extends Auditable implements UserDetails {
 
 //    @Column(unique = true, updatable = false, nullable = true)

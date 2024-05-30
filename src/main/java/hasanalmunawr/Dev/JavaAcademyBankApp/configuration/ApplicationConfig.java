@@ -36,7 +36,7 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public AuditorAware<String> auditorAware() {
+    public AuditorAware<Integer> auditorAware() {
         return new ApplicationAuditAware();
     }
 
