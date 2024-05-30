@@ -1,11 +1,10 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp;
 
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
-import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
+import hasanalmunawr.Dev.OnlineWallet.entity.UserEntity;
+import hasanalmunawr.Dev.OnlineWallet.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.jdbc.AutoConfigureDataJdbc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

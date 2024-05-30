@@ -1,9 +1,7 @@
 package hasanalmunawr.Dev.JavaAcademyBankApp;
 
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.Auditable;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.UserEntity;
-import hasanalmunawr.Dev.JavaAcademyBankApp.repository.UserRepository;
-import lombok.val;
+import hasanalmunawr.Dev.OnlineWallet.entity.UserEntity;
+import hasanalmunawr.Dev.OnlineWallet.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
