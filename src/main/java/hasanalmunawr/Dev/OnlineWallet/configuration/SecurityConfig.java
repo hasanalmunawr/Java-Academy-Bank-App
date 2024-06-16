@@ -27,13 +27,18 @@ public class SecurityConfig {
     private final AuthenticationManager authenticationManager;
     private final LogoutHandler logoutHandler;
 
+    private static String[] URL_PERMISSIONS = {
+            "/api/v1/auth/**",
+            "/swagger-ui.*html",
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .securityMatcher(new AntPathRequestMatcher("/api/v1/auth/**"))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/auth/**").permitAll()
+                        auth.requestMatchers(URL_PERMISSIONS).permitAll()
                                 .anyRequest().authenticated()
                 )
 

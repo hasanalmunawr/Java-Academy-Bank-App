@@ -5,7 +5,6 @@ import hasanalmunawr.Dev.OnlineWallet.dto.request.TransferRequest;
 import hasanalmunawr.Dev.OnlineWallet.dto.request.WithdrawRequest;
 import hasanalmunawr.Dev.OnlineWallet.dto.response.TransferResponse;
 import hasanalmunawr.Dev.OnlineWallet.dto.response.WithdrawResponse;
-import hasanalmunawr.Dev.JavaAcademyBankApp.entity.*;
 import hasanalmunawr.Dev.OnlineWallet.exception.AccountNotFoundException;
 import hasanalmunawr.Dev.OnlineWallet.exception.OperationNotPermittedException;
 import hasanalmunawr.Dev.OnlineWallet.repository.PrimaryAccountRepository;
